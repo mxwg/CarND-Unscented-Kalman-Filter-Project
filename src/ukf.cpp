@@ -80,19 +80,17 @@ UKF::~UKF() {}
  * either radar or laser.
  */
 void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
-
     if (!this->is_initialized_) {
         initialize(meas_package);
         return; // early
     }
 
+    // calculate delta t
     double delta_t = (meas_package.timestamp_ - previous_timestamp_) / 1000000.0; // microseconds to seconds
     previous_timestamp_ = meas_package.timestamp_;
 
-
     // predict, ...
     Prediction(delta_t);
-
 
     // then update!
     if (MeasurementPackage::LASER == meas_package.sensor_type_ && use_laser_) {
@@ -113,30 +111,30 @@ void UKF::Prediction(double delta_t) {
     MatrixXd P_aug = MatrixXd(n_aug_, n_aug_);
     MatrixXd Xsig_aug = MatrixXd(n_aug_, n_sig_);
 
-    //create augmented mean state
+    // create augmented mean state
     x_aug.head(n_x_) = x_;
     x_aug(n_x_) = 0;
     x_aug(n_x_ + 1) = 0;
 
-    //create augmented covariance matrix
+    // create augmented covariance matrix
     P_aug.setZero();
     P_aug.topLeftCorner(5, 5) = P_;
     P_aug(5, 5) = std_a_ * std_a_;
     P_aug(6, 6) = std_yawdd_ * std_yawdd_;
 
-    //create square root matrix
+    // create square root matrix
     MatrixXd L = P_aug.llt().matrixL();
 
-    //create augmented sigma points
+    // create augmented sigma points
     Xsig_aug.col(0) = x_aug;
     for (int i = 0; i < n_aug_; i++) {
         Xsig_aug.col(i + 1) = x_aug + sqrt(lambda_ + n_aug_) * L.col(i);
         Xsig_aug.col(i + 1 + n_aug_) = x_aug - sqrt(lambda_ + n_aug_) * L.col(i);
     }
 
-    //predict sigma points
+    // predict sigma points
     for (int i = 0; i < n_sig_; i++) {
-        //extract values for better readability
+        // extract values for better readability
         double p_x = Xsig_aug(0, i);
         double p_y = Xsig_aug(1, i);
         double v = Xsig_aug(2, i);
@@ -145,10 +143,10 @@ void UKF::Prediction(double delta_t) {
         double nu_a = Xsig_aug(5, i);
         double nu_yawdd = Xsig_aug(6, i);
 
-        //predicted state values
+        // predicted state values
         double px_p, py_p;
 
-        //avoid division by zero
+        // avoid division by zero
         if (fabs(yawd) > 0.001) {
             px_p = p_x + v / yawd * (sin(yaw + yawd * delta_t) - sin(yaw));
             py_p = p_y + v / yawd * (cos(yaw) - cos(yaw + yawd * delta_t));
@@ -161,7 +159,7 @@ void UKF::Prediction(double delta_t) {
         double yaw_p = yaw + yawd * delta_t;
         double yawd_p = yawd;
 
-        //add noise
+        // add noise
         px_p = px_p + 0.5 * nu_a * delta_t * delta_t * cos(yaw);
         py_p = py_p + 0.5 * nu_a * delta_t * delta_t * sin(yaw);
         v_p = v_p + nu_a * delta_t;
@@ -169,7 +167,7 @@ void UKF::Prediction(double delta_t) {
         yaw_p = yaw_p + 0.5 * nu_yawdd * delta_t * delta_t;
         yawd_p = yawd_p + nu_yawdd * delta_t;
 
-        //write predicted sigma point into right column
+        // write predicted sigma point into right column
         Xsig_pred_(0, i) = px_p;
         Xsig_pred_(1, i) = py_p;
         Xsig_pred_(2, i) = v_p;
@@ -177,15 +175,15 @@ void UKF::Prediction(double delta_t) {
         Xsig_pred_(4, i) = yawd_p;
     }
 
-    //predicted state mean
+    // predicted state mean
     x_.setZero();
-    for (int i = 0; i < n_sig_; i++) {  //iterate over sigma points
+    for (int i = 0; i < n_sig_; i++) {  // iterate over sigma points
         x_ = x_ + weights_(i) * Xsig_pred_.col(i);
     }
 
-    //predicted state covariance matrix
+    // predicted state covariance matrix
     P_.fill(0.0);
-    for (int i = 0; i < n_sig_; i++) {  //iterate over sigma points
+    for (int i = 0; i < n_sig_; i++) {  // iterate over sigma points
         // state difference
         VectorXd x_diff = Xsig_pred_.col(i) - x_;
         x_diff(3) = normalize(x_diff(3));
@@ -302,7 +300,6 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 
 void UKF::initialize(MeasurementPackage measurement_pack) {
     // initial covariance
-    P_ = MatrixXd(n_x_, n_x_);
     P_ <<
        1, 0, 0, 0, 0,
             0, 1, 0, 0, 0,
