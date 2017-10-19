@@ -14,10 +14,10 @@ using std::vector;
  */
 UKF::UKF() {
     // if this is false, laser measurements will be ignored (except during init)
-    use_laser_ = false;
+    use_laser_ = true;
 
     // if this is false, radar measurements will be ignored (except during init)
-    use_radar_ = true;
+    use_radar_ = false;
 
     // initial state vector
     x_ = VectorXd(5);
@@ -239,6 +239,34 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
 
     You'll also need to calculate the lidar NIS.
     */
+    MatrixXd H_(2, 5);
+    H_ << 1, 0, 0, 0, 0,
+            0, 1, 0, 0, 0;
+
+    MatrixXd R_(2,2);
+    R_ << 0.0225, 0,
+            0, 0.0225;
+
+    MatrixXd I_(5,5);
+    I_.setIdentity();
+
+    Eigen::VectorXd z_pred = H_ * x_;
+    D("zpred")
+    D(z_pred)
+    Eigen::VectorXd z = meas_package.raw_measurements_;
+    Eigen::VectorXd y = z - z_pred;
+
+    Eigen::MatrixXd Ht = H_.transpose();
+    Eigen::MatrixXd S = H_ * P_ * Ht + R_;
+    Eigen::MatrixXd Si = S.inverse();
+    Eigen::MatrixXd PHt = P_ * Ht;
+    Eigen::MatrixXd K = PHt * Si;
+    x_ = x_ + (K * y);
+    P_ = (I_ - K * H_) * P_;
+
+    std::cout << "updated:" << std::endl;
+    printState();
+
 }
 
 /**
