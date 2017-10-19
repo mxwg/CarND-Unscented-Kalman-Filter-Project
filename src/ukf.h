@@ -108,9 +108,17 @@ public:
      */
     void UpdateRadar(MeasurementPackage meas_package);
 
+    /**
+     * Initializes state and covariance depending on the measurement
+     * @param meas_package The first measurement package received
+     */
     void initialize(MeasurementPackage meas_package);
 
-    void printState();
+    /**
+     * Prints the current state of the UKF
+     * @param title The title for the print statement
+     */
+    void printState(std::string title);
 };
 
 #endif /* UKF_H */
