@@ -385,24 +385,28 @@ void UKF::initialize(MeasurementPackage measurement_pack) {
             0, 0, 0, 1, 0,
             0, 0, 0, 0, 1;
 
+    cout << "EKF initialized with ";
+
     // initialize state according to measurement type
     if (measurement_pack.sensor_type_ == MeasurementPackage::RADAR) {
         // Convert radar from polar to cartesian coordinates and initialize state
-        double radius = measurement_pack.raw_measurements_(0);
-        double angle = measurement_pack.raw_measurements_(1);
-        x_(0) = radius * cos(angle);
-        x_(1) = radius * sin(angle);
-        //TODO: initialize velocities as well
+        double rho = measurement_pack.raw_measurements_(0);
+        double phi = measurement_pack.raw_measurements_(1);
+        double rhod = measurement_pack.raw_measurements_(2);
+        x_(0) = rho * cos(phi);
+        x_(1) = rho * sin(phi);
+        x_(2) = rhod;
+        cout << " radar:" << endl;
     } else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
         // Initialize state
         x_(0) = measurement_pack.raw_measurements_(0);
         x_(1) = measurement_pack.raw_measurements_(1);
+        cout << " laser:" << endl;
     }
 
     // initialize timestamp
     previous_timestamp_ = measurement_pack.timestamp_;
 
-    cout << "EKF initialized with: " << endl;
     printState();
 
     // done initializing, no need to predict or update
