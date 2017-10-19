@@ -136,12 +136,31 @@ private:
      */
     VectorXd createWeights() const;
 
+    /**
+     * Normalize angles
+     * @param angle_rad the angle to be normalized
+     * @return the normalized angle
+     */
     double normalize(double angle_rad) const;
 
+    /**
+     * Create augmented sigma points
+     * @return the sigma point matrix
+     */
     MatrixXd createAugmentedSigmaPoints() const;
 
+    /**
+     * Sets the predicted sigma points
+     * @param Xsig_aug the augmented sigma point matrix
+     * @param delta_t the time diffence
+     */
     void predictSigmaPoints(const MatrixXd & Xsig_aug, double delta_t);
 
+    /**
+     * Transforms sigma points into measurment space for radar
+     * @param n_z dimension of the measurement
+     * @return the sigma point matrix in radar measurement space
+     */
     MatrixXd sigmaPointsInMeasurementSpace(int n_z);
 };
 

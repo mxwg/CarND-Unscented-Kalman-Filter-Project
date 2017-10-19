@@ -106,6 +106,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
  * measurement and this one.
  */
 void UKF::Prediction(double delta_t) {
+    // The prediction code is taken from the lecture quizzes
     // Calculate augmented sigma points
     MatrixXd Xsig_aug = createAugmentedSigmaPoints();
 
@@ -155,6 +156,7 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
  * @param {MeasurementPackage} meas_package
  */
 void UKF::UpdateRadar(MeasurementPackage meas_package) {
+    // The radar update code is taken from the lecture quizzes
     int n_z = 3;
     MatrixXd Zsig = sigmaPointsInMeasurementSpace(n_z);
 
