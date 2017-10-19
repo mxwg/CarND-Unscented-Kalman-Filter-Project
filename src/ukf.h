@@ -135,6 +135,8 @@ private:
      * @return the weights
      */
     VectorXd createWeights() const;
+
+    double normalize(double angle_rad) const;
 };
 
 #endif /* UKF_H */
