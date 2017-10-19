@@ -7,8 +7,8 @@ using Eigen::MatrixXd;
 using Eigen::VectorXd;
 using std::vector;
 
-#define D(x) std::cout << x << std::endl;
-
+//#define D(x) std::cout << x << std::endl;
+#define D(x)
 /**
  * Initializes Unscented Kalman filter
  */
@@ -17,7 +17,7 @@ UKF::UKF() {
     use_laser_ = true;
 
     // if this is false, radar measurements will be ignored (except during init)
-    use_radar_ = false;
+    use_radar_ = true;
 
     // initial state vector
     x_ = VectorXd(5);
@@ -26,10 +26,10 @@ UKF::UKF() {
     P_ = MatrixXd(5, 5);
 
     // Process noise standard deviation longitudinal acceleration in m/s^2
-    std_a_ = 3;
+    std_a_ = 2;
 
     // Process noise standard deviation yaw acceleration in rad/s^2
-    std_yawdd_ = 3;
+    std_yawdd_ = 2;
 
     // Laser measurement noise standard deviation position1 in m
     std_laspx_ = 0.15;
