@@ -139,6 +139,8 @@ private:
     double normalize(double angle_rad) const;
 
     MatrixXd createAugmentedSigmaPoints() const;
+
+    void predictSigmaPoints(const MatrixXd & Xsig_aug, double delta_t);
 };
 
 #endif /* UKF_H */
