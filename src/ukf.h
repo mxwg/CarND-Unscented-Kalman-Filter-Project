@@ -28,6 +28,15 @@ public:
     ///* state covariance matrix
     MatrixXd P_;
 
+    ///* Laser state transition matrix
+    MatrixXd H_laser_;
+
+    ///* Laser measurement covariance matrix
+    MatrixXd R_laser_;
+
+    ///* Identity matrix for laser measurements
+    MatrixXd I_;
+
     ///* predicted sigma points matrix
     MatrixXd Xsig_pred_;
 
@@ -119,6 +128,13 @@ public:
      * @param title The title for the print statement
      */
     void printState(std::string title);
+
+private:
+    /**
+     * Creates the weights vector
+     * @return the weights
+     */
+    VectorXd createWeights() const;
 };
 
 #endif /* UKF_H */
