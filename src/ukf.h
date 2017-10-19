@@ -137,6 +137,8 @@ private:
     VectorXd createWeights() const;
 
     double normalize(double angle_rad) const;
+
+    MatrixXd createAugmentedSigmaPoints() const;
 };
 
 #endif /* UKF_H */

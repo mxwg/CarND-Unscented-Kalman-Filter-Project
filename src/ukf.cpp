@@ -107,30 +107,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
  */
 void UKF::Prediction(double delta_t) {
     // Calculate augmented sigma points
-    VectorXd x_aug = VectorXd(n_aug_);
-    MatrixXd P_aug = MatrixXd(n_aug_, n_aug_);
-    MatrixXd Xsig_aug = MatrixXd(n_aug_, n_sig_);
-
-    // create augmented mean state
-    x_aug.head(n_x_) = x_;
-    x_aug(n_x_) = 0;
-    x_aug(n_x_ + 1) = 0;
-
-    // create augmented covariance matrix
-    P_aug.setZero();
-    P_aug.topLeftCorner(5, 5) = P_;
-    P_aug(5, 5) = std_a_ * std_a_;
-    P_aug(6, 6) = std_yawdd_ * std_yawdd_;
-
-    // create square root matrix
-    MatrixXd L = P_aug.llt().matrixL();
-
-    // create augmented sigma points
-    Xsig_aug.col(0) = x_aug;
-    for (int i = 0; i < n_aug_; i++) {
-        Xsig_aug.col(i + 1) = x_aug + sqrt(lambda_ + n_aug_) * L.col(i);
-        Xsig_aug.col(i + 1 + n_aug_) = x_aug - sqrt(lambda_ + n_aug_) * L.col(i);
-    }
+    MatrixXd Xsig_aug = createAugmentedSigmaPoints();
 
     // predict sigma points
     for (int i = 0; i < n_sig_; i++) {
@@ -369,4 +346,33 @@ double UKF::normalize(double angle_rad) const {
     while (angle_rad < -M_PI) angle_rad += 2. * M_PI;
 
     return angle_rad;
+}
+
+MatrixXd UKF::createAugmentedSigmaPoints() const {
+    VectorXd x_aug = VectorXd(n_aug_);
+    MatrixXd P_aug = MatrixXd(n_aug_, n_aug_);
+    MatrixXd Xsig_aug = MatrixXd(n_aug_, n_sig_);
+
+    // create augmented mean state
+    x_aug.head(n_x_) = x_;
+    x_aug(n_x_) = 0;
+    x_aug(n_x_ + 1) = 0;
+
+    // create augmented covariance matrix
+    P_aug.setZero();
+    P_aug.topLeftCorner(5, 5) = P_;
+    P_aug(5, 5) = std_a_ * std_a_;
+    P_aug(6, 6) = std_yawdd_ * std_yawdd_;
+
+    // create square root matrix
+    MatrixXd L = P_aug.llt().matrixL();
+
+    // create augmented sigma points
+    Xsig_aug.col(0) = x_aug;
+    for (int i = 0; i < n_aug_; i++) {
+        Xsig_aug.col(i + 1) = x_aug + sqrt(lambda_ + n_aug_) * L.col(i);
+        Xsig_aug.col(i + 1 + n_aug_) = x_aug - sqrt(lambda_ + n_aug_) * L.col(i);
+    }
+
+    return Xsig_aug;
 }
