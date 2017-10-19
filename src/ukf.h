@@ -141,6 +141,8 @@ private:
     MatrixXd createAugmentedSigmaPoints() const;
 
     void predictSigmaPoints(const MatrixXd & Xsig_aug, double delta_t);
+
+    MatrixXd sigmaPointsInMeasurementSpace(int n_z);
 };
 
 #endif /* UKF_H */

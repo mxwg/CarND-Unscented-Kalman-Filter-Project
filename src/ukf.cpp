@@ -112,15 +112,15 @@ void UKF::Prediction(double delta_t) {
     // predict sigma points
     predictSigmaPoints(Xsig_aug, delta_t);
 
-    // predicted state mean
+    // predict new mean state
     x_.setZero();
-    for (int i = 0; i < n_sig_; i++) {  // iterate over sigma points
+    for (int i = 0; i < n_sig_; i++) {
         x_ = x_ + weights_(i) * Xsig_pred_.col(i);
     }
 
-    // predicted state covariance matrix
+    // predict new state covariance matrix
     P_.fill(0.0);
-    for (int i = 0; i < n_sig_; i++) {  // iterate over sigma points
+    for (int i = 0; i < n_sig_; i++) {
         // state difference
         VectorXd x_diff = Xsig_pred_.col(i) - x_;
         x_diff(3) = normalize(x_diff(3));
@@ -156,25 +156,7 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
  */
 void UKF::UpdateRadar(MeasurementPackage meas_package) {
     int n_z = 3;
-    // transform sigma points into measurement space
-    MatrixXd Zsig = MatrixXd(n_z, n_sig_);
-
-    for (int i = 0; i < n_sig_; i++) {
-
-        // extract values for better readability
-        double p_x = Xsig_pred_(0, i);
-        double p_y = Xsig_pred_(1, i);
-        double v = Xsig_pred_(2, i);
-        double yaw = Xsig_pred_(3, i);
-
-        double v1 = cos(yaw) * v;
-        double v2 = sin(yaw) * v;
-
-        // measurement model
-        Zsig(0, i) = sqrt(p_x * p_x + p_y * p_y);
-        Zsig(1, i) = atan2(p_y, p_x);
-        Zsig(2, i) = (p_x * v1 + p_y * v2) / sqrt(p_x * p_x + p_y * p_y);
-    }
+    MatrixXd Zsig = sigmaPointsInMeasurementSpace(n_z);
 
     // mean predicted measurement
     VectorXd z_pred = VectorXd(n_z);
@@ -379,5 +361,25 @@ void UKF::predictSigmaPoints(const MatrixXd &Xsig_aug, double delta_t) {
         Xsig_pred_(3, i) = yaw_p;
         Xsig_pred_(4, i) = yawd_p;
     }
+}
 
+MatrixXd UKF::sigmaPointsInMeasurementSpace(int n_z) {
+    MatrixXd Zsig = MatrixXd(n_z, n_sig_);
+
+    for (int i = 0; i < n_sig_; i++) {
+        // extract values for better readability
+        double p_x = Xsig_pred_(0, i);
+        double p_y = Xsig_pred_(1, i);
+        double v = Xsig_pred_(2, i);
+        double yaw = Xsig_pred_(3, i);
+
+        double v1 = cos(yaw) * v;
+        double v2 = sin(yaw) * v;
+
+        // radar measurement model
+        Zsig(0, i) = sqrt(p_x * p_x + p_y * p_y);
+        Zsig(1, i) = atan2(p_y, p_x);
+        Zsig(2, i) = (p_x * v1 + p_y * v2) / sqrt(p_x * p_x + p_y * p_y);
+    }
+    return Zsig;
 }
